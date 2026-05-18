@@ -2,23 +2,23 @@
   "use strict";
 
   var pages = [
-    "html.html",
-    "html(1a).html",
-    "html(2).html",
-    "html(3).html",
-    "html(4).html",
-    "html(5).html",
-    "html(6).html",
-    "html(7).html",
-    "html(8).html",
-    "html(9).html",
-    "html(10).html",
-    "html(11).html",
-    "html(12).html",
-    "html(13).html",
-    "html(14).html",
-    "html(15).html",
-    "html(16).html"
+    "index.html",
+    "slide-1.html",
+    "slide-2.html",
+    "slide-3.html",
+    "slide-4.html",
+    "slide-5.html",
+    "slide-6.html",
+    "slide-7.html",
+    "slide-8.html",
+    "slide-9.html",
+    "slide-10.html",
+    "slide-11.html",
+    "slide-12.html",
+    "slide-13.html",
+    "slide-14.html",
+    "slide-15.html",
+    "slide-16.html"
   ];
 
   var NAV_OUT_MS = 280;
@@ -30,7 +30,7 @@
   function getFileName() {
     var path = window.location.pathname || "";
     var name = path.substring(path.lastIndexOf("/") + 1);
-    return decodeURIComponent(name || "html.html");
+    return decodeURIComponent(name || "index.html");
   }
 
   function getIndex() {
