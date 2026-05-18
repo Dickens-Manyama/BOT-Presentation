@@ -46,6 +46,28 @@ body {
   margin: 0 auto;
 }
 
+/* All text in slide markup is black (overrides per-slide grays, Tailwind utilities, inline styles). */
+#o-html-render,
+#o-html-render * {
+  color: #000000 !important;
+}
+
+#o-html-render a,
+#o-html-render a:visited {
+  color: #000000 !important;
+}
+
+#o-html-render *::before,
+#o-html-render *::after {
+  color: #000000 !important;
+}
+
+#o-html-render .text-super-sub,
+#o-html-render [class*="text-super-sub"] {
+  -webkit-text-fill-color: #000000 !important;
+  background: transparent !important;
+}
+
 /* Normal viewing: scale slide to fit screen */
 body:not(.presentation-mode) #page_container,
 body:not(.presentation-mode) .page_container {
