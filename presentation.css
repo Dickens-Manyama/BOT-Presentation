@@ -14,10 +14,15 @@ html {
   text-size-adjust: 100%;
 }
 
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   margin: 0;
   width: 100%;
-  overflow-x: hidden;
   background: #f0f0f0;
 }
 
@@ -219,6 +224,56 @@ body.presentation-mode.presentation-nav-in.presentation-nav-in-active .page_cont
   transition:
     opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Phones / small tablets: more slide space, larger tap targets, readable chrome */
+@media (max-width: 768px) {
+  #o-html-render.slide-root {
+    padding: max(6px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right))
+      max(8px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+  }
+
+  .presentation-launch {
+    top: max(8px, env(safe-area-inset-top));
+    right: max(8px, env(safe-area-inset-right));
+    padding: 12px 18px;
+    font-size: 13px;
+    min-height: 44px;
+    line-height: 1.2;
+  }
+
+  .presentation-toolbar {
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    left: max(8px, env(safe-area-inset-left));
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 14px;
+    font-size: 14px;
+    border-radius: 14px;
+  }
+
+  .presentation-toolbar button {
+    min-height: 44px;
+    min-width: 48px;
+    padding: 10px 14px;
+    font-size: 14px;
+    border-radius: 12px;
+  }
+
+  .presentation-toolbar .presentation-status {
+    flex: 1 1 100%;
+    text-align: center;
+    padding: 4px 0 0;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 640px) {
+  body.presentation-mode #o-html-render.slide-root {
+    padding-bottom: max(96px, calc(env(safe-area-inset-bottom) + 80px));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
