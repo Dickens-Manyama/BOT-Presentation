@@ -24,6 +24,9 @@
   var NAV_OUT_MS = 280;
   var NAV_IN_MS = 420;
 
+  var BASE_W = 1280;
+  var BASE_H = 720;
+
   function getFileName() {
     var path = window.location.pathname || "";
     var name = path.substring(path.lastIndexOf("/") + 1);
@@ -35,17 +38,14 @@
     return pages.indexOf(name);
   }
 
-  function setScale() {
-    var baseWidth = 1280;
-    var baseHeight = 720;
-    var scale = Math.max(window.innerWidth / baseWidth, window.innerHeight / baseHeight);
-    document.body.style.setProperty("--presentation-scale", scale.toString());
+  function findPageSurface() {
+    return document.getElementById("page_container") || document.querySelector(".page_container");
   }
 
   function findSlideRoot() {
-    var direct = document.getElementById("page_container");
-    if (direct) {
-      return direct;
+    var page = findPageSurface();
+    if (page) {
+      return page;
     }
 
     var alt = document.querySelector(".page_container");
@@ -59,6 +59,34 @@
     }
 
     return document.body;
+  }
+
+  function ensureSlideFitWrapper() {
+    var page = findPageSurface();
+    if (!page || !page.parentNode) {
+      return;
+    }
+    if (page.parentElement && page.parentElement.classList.contains("slide-fit-chrome")) {
+      return;
+    }
+    var chrome = document.createElement("div");
+    chrome.className = "slide-fit-chrome";
+    page.parentNode.insertBefore(chrome, page);
+    chrome.appendChild(page);
+  }
+
+  function updateSlideScale() {
+    var inset = Math.max(12, Math.min(28, Math.round(window.innerWidth * 0.02)));
+    var bottomReserve = document.body.classList.contains("presentation-mode") ? 88 : 24;
+    var topReserve = document.body.classList.contains("presentation-mode") ? 12 : 56;
+    var w = window.innerWidth - inset * 2;
+    var h = window.innerHeight - inset * 2 - bottomReserve - topReserve;
+    w = Math.max(160, w);
+    h = Math.max(160, h);
+    var scale = Math.min(w / BASE_W, h / BASE_H);
+    scale = Math.max(0.12, Math.min(scale, 4));
+    document.documentElement.style.setProperty("--slide-scale", String(scale));
+    document.documentElement.style.setProperty("--presentation-scale", String(scale));
   }
 
   function buildToolbar() {
@@ -186,6 +214,13 @@
   }
 
   function attach() {
+    var render = document.getElementById("o-html-render");
+    if (render) {
+      render.classList.add("slide-root");
+    }
+
+    ensureSlideFitWrapper();
+
     var slide = findSlideRoot();
     var launch = document.createElement("button");
     launch.className = "presentation-launch";
@@ -215,7 +250,7 @@
       document.body.classList.remove("presentation-nav-out");
       document.body.classList.add("presentation-mode");
       slide.classList.add("presentation-slide");
-      setScale();
+      updateSlideScale();
       updateButtons();
       launch.textContent = "Exit Presentation";
       requestFullscreen().catch(function () {
@@ -242,6 +277,7 @@
       );
       slide.classList.remove("presentation-slide");
       launch.textContent = "Presentation";
+      updateSlideScale();
     }
 
     function handleToggle() {
@@ -255,6 +291,7 @@
       enablePresentationMode();
     }
 
+    updateSlideScale();
     updateButtons();
 
     document.addEventListener("keydown", function (event) {
@@ -275,9 +312,11 @@
     });
 
     window.addEventListener("resize", function () {
-      if (isPresentationMode()) {
-        setScale();
-      }
+      updateSlideScale();
+    });
+
+    window.addEventListener("orientationchange", function () {
+      window.setTimeout(updateSlideScale, 200);
     });
 
     var present = isPresentationMode();
@@ -294,7 +333,6 @@
     }
 
     window.addEventListener("popstate", syncPresentationState);
-
   }
 
   if (document.readyState === "loading") {
