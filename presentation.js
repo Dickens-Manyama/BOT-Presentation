@@ -75,16 +75,45 @@
     chrome.appendChild(page);
   }
 
+  function measureSlideBase(page, present) {
+    if (!present || !page) {
+      return { baseW: BASE_W, baseH: BASE_H };
+    }
+
+    var sw = Math.ceil(Math.max(BASE_W, page.scrollWidth, page.offsetWidth));
+    var sh = Math.ceil(Math.max(BASE_H, page.scrollHeight, page.offsetHeight));
+    sw = Math.min(Math.max(sw, BASE_W), 4096);
+    sh = Math.min(Math.max(sh, BASE_H), 4096);
+    return { baseW: sw, baseH: sh };
+  }
+
   function updateSlideScale() {
-    var inset = Math.max(12, Math.min(28, Math.round(window.innerWidth * 0.02)));
-    var bottomReserve = document.body.classList.contains("presentation-mode") ? 88 : 24;
-    var topReserve = document.body.classList.contains("presentation-mode") ? 12 : 56;
-    var w = window.innerWidth - inset * 2;
-    var h = window.innerHeight - inset * 2 - bottomReserve - topReserve;
-    w = Math.max(160, w);
-    h = Math.max(160, h);
-    var scale = Math.min(w / BASE_W, h / BASE_H);
+    var present = document.body.classList.contains("presentation-mode");
+    var render = document.getElementById("o-html-render");
+    var page = findPageSurface();
+    var dims = measureSlideBase(page, present);
+    var baseW = dims.baseW;
+    var baseH = dims.baseH;
+
+    var w;
+    var h;
+
+    /* In presentation mode, padding only follows safe-area — use the slide root client box. */
+    if (present && render && (render.clientWidth > 0 || render.clientHeight > 0)) {
+      w = Math.max(160, render.clientWidth);
+      h = Math.max(160, render.clientHeight);
+    } else {
+      var inset = Math.max(12, Math.min(28, Math.round(window.innerWidth * 0.02)));
+      var bottomReserve = present ? 88 : 24;
+      var topReserve = present ? 12 : 56;
+      w = Math.max(160, window.innerWidth - inset * 2);
+      h = Math.max(160, window.innerHeight - inset * 2 - bottomReserve - topReserve);
+    }
+
+    var scale = Math.min(w / baseW, h / baseH);
     scale = Math.max(0.12, Math.min(scale, 4));
+    document.documentElement.style.setProperty("--slide-base-w", String(baseW));
+    document.documentElement.style.setProperty("--slide-base-h", String(baseH));
     document.documentElement.style.setProperty("--slide-scale", String(scale));
     document.documentElement.style.setProperty("--presentation-scale", String(scale));
   }
@@ -222,6 +251,17 @@
     ensureSlideFitWrapper();
 
     var slide = findSlideRoot();
+    var surface = findPageSurface();
+    if (surface) {
+      var imgs = surface.querySelectorAll("img");
+      for (var i = 0; i < imgs.length; i++) {
+        var img = imgs[i];
+        if (!img.complete) {
+          img.addEventListener("load", updateSlideScale, { once: true });
+        }
+      }
+    }
+
     var launch = document.createElement("button");
     launch.className = "presentation-launch";
     launch.textContent = isPresentationMode() ? "Exit Presentation" : "Presentation";
@@ -251,6 +291,9 @@
       document.body.classList.add("presentation-mode");
       slide.classList.add("presentation-slide");
       updateSlideScale();
+      window.requestAnimationFrame(function () {
+        updateSlideScale();
+      });
       updateButtons();
       launch.textContent = "Exit Presentation";
       requestFullscreen().catch(function () {
@@ -313,6 +356,12 @@
 
     window.addEventListener("resize", function () {
       updateSlideScale();
+    });
+
+    document.addEventListener("fullscreenchange", function () {
+      window.requestAnimationFrame(function () {
+        window.requestAnimationFrame(updateSlideScale);
+      });
     });
 
     window.addEventListener("orientationchange", function () {

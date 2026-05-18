@@ -4,6 +4,9 @@
   --presentation-toolbar-border: rgba(255, 255, 255, 0.2);
   --slide-scale: 1;
   --presentation-scale: 1;
+  /* Unitless; used as calc(var(--slide-base-w) * 1px * var(--slide-scale)) */
+  --slide-base-w: 1280;
+  --slide-base-h: 720;
 }
 
 html {
@@ -35,8 +38,8 @@ body {
 }
 
 .slide-fit-chrome {
-  width: calc(1280px * var(--slide-scale, 1));
-  height: calc(720px * var(--slide-scale, 1));
+  width: calc(var(--slide-base-w, 1280) * 1px * var(--slide-scale, 1));
+  height: calc(var(--slide-base-h, 720) * 1px * var(--slide-scale, 1));
   position: relative;
   flex-shrink: 0;
   overflow: hidden;
@@ -51,8 +54,12 @@ body:not(.presentation-mode) .page_container {
 }
 
 body.presentation-mode {
-  background: #111111;
+  background: #ffffff;
   overflow: hidden;
+}
+
+html:has(body.presentation-mode) {
+  background: #ffffff;
 }
 
 .presentation-launch {
@@ -70,6 +77,13 @@ body.presentation-mode {
   text-transform: uppercase;
   cursor: pointer;
   touch-action: manipulation;
+}
+
+body.presentation-mode .presentation-launch {
+  background: rgba(255, 255, 255, 0.92);
+  color: #111111;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
 .presentation-toolbar {
@@ -124,23 +138,39 @@ body.presentation-mode #o-html-render.slide-root {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
-    max(88px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  /* Toolbar is fixed; only reserve safe-area so the slide can use the full viewport */
+  padding: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right))
+    max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
 }
 
 body.presentation-mode .slide-fit-chrome {
-  width: calc(1280px * var(--slide-scale, 1));
-  height: calc(720px * var(--slide-scale, 1));
+  width: calc(var(--slide-base-w, 1280) * 1px * var(--slide-scale, 1));
+  height: calc(var(--slide-base-h, 720) * 1px * var(--slide-scale, 1));
 }
 
 body.presentation-mode #page_container.presentation-slide,
 body.presentation-mode .page_container.presentation-slide {
   width: 1280px;
-  height: 720px;
+  min-height: 720px;
+  height: auto;
+  max-height: none;
+  overflow: hidden;
   transform: scale(var(--slide-scale, 1));
   transform-origin: center center;
-  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
+  box-shadow: none;
   will-change: opacity, transform;
+}
+
+/* Decorative full-slide watermarks (absolute, pointer-events none) inflate scroll height and shrink fit */
+body.presentation-mode #page_container.presentation-slide > span.absolute.pointer-events-none,
+body.presentation-mode .page_container.presentation-slide > span.absolute.pointer-events-none {
+  display: none !important;
+}
+
+/* Full-bleed diagram slides: use the slide canvas; object-fit keeps image uncropped */
+body.presentation-mode .full-image {
+  object-fit: contain;
+  object-position: center center;
 }
 
 /* Slide change transitions */
